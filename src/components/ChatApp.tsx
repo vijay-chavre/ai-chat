@@ -82,73 +82,119 @@ const ChatApp: React.FC = () => {
     <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Chat Messages */}
       <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
-        {messages.map((msg) => (
+      {messages.map((msg, index) => (
+        <Box
+        key={msg.id}
+        sx={{
+          display: 'flex',
+          justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+          mb: 2,
+          '@keyframes bounce': {
+            '0%, 100%': {
+              transform: 'translateY(0)',
+            },
+            '50%': {
+              transform: 'translateY(-10px)',
+            },
+          },
+          animation: loading && index === messages.length - 1 ? 'bounce 1s infinite' : 'none',
+        }}
+        >
+        {msg.sender === 'ai' && (
+          <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar>
+        )}
+
+        <Box
+          sx={{
+          backgroundColor: msg.sender === 'user' ? 'primary.main' : 'grey.800',
+          color: 'white',
+          p: 1.5,
+          borderRadius: 2,
+          maxWidth: '75%',
+          whiteSpace: 'pre-wrap',
+          '& p': { margin: 0 },
+          '& pre': { 
+            overflowX: 'auto',
+            maxWidth: '100%',
+            '& code': {
+            display: 'block',
+            padding: '0.5em',
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderRadius: 1
+            }
+          }
+          }}
+        >
+          <ReactMarkdown components={{
+          pre: ({ children }) => <pre style={{ margin: 0 }}>{children}</pre>,
+          code: ({ children }) => <code>{children}</code>
+          }}>
+          {msg.text || (loading && index === messages.length - 1 && '...')}
+          </ReactMarkdown>
+        </Box>
+        {msg.sender === 'user' && (
+          <Avatar sx={{ bgcolor: 'blue', ml: 1 }}>U</Avatar>
+        )}
+        </Box>
+      ))}
+      {loading && messages[messages.length - 1]?.sender === 'ai' && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            mb: 2,
+            '@keyframes bounce': {
+              '0%, 100%': {
+                transform: 'translateY(0)',
+              },
+              '50%': {
+                transform: 'translateY(-10px)',
+              },
+            },
+            animation: 'bounce 1s infinite',
+          }}
+        >
+          {/* <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar> */}
           <Box
-            key={msg.id}
             sx={{
+              backgroundColor: 'grey.800',
+              color: 'white',
+              p: 1.5,
+              borderRadius: 2,
+              maxWidth: '75%',
               display: 'flex',
-              justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-              mb: 2,
+              gap: 0.5,
             }}
           >
-            {msg.sender === 'ai' && (
-              <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar>
-            )}
-
-            <Box
-              sx={{
-                backgroundColor: msg.sender === 'user' ? 'primary.main' : 'grey.800',
-                color: 'white',
-                p: 1.5,
-                borderRadius: 2,
-                maxWidth: '75%',
-                whiteSpace: 'pre-wrap',
-                '& p': { margin: 0 },
-                '& pre': { 
-                  overflowX: 'auto',
-                  maxWidth: '100%',
-                  '& code': {
-                    display: 'block',
-                    padding: '0.5em',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    borderRadius: 1
-                  }
-                }
+            <span>.</span>
+            <span
+              style={{
+              display: 'inline-block',
+              animation: 'bounce 1s infinite',
               }}
             >
-              <ReactMarkdown components={{
-                pre: ({ children }) => <pre style={{ margin: 0 }}>{children}</pre>,
-                code: ({ children }) => <code>{children}</code>
-              }}>
-                {msg.text}
-              </ReactMarkdown>
-            </Box>
-            {msg.sender === 'user' && (
-              <Avatar sx={{ bgcolor: 'blue', ml: 1 }}>U</Avatar>
-            )}
+              .
+            </span>
+            <span>.</span>
           </Box>
-        ))}
-        {loading && (
-          <Box display="flex" justifyContent="center" mt={2}>
-            <CircularProgress size={24} />
-          </Box>
-        )}
+        </Box>
+      )}
       </Box>
 
       {/* Input Section */}
       <Box sx={{ display: 'flex', p: 2, borderTop: '1px solid #ddd' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          disabled={loading}
-        />
-        <IconButton color="primary" onClick={sendMessage} disabled={loading}>
-          <SendIcon />
-        </IconButton>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Type a message..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+        disabled={loading}
+      />
+      <IconButton color="primary" onClick={sendMessage} disabled={loading}>
+        <SendIcon />
+      </IconButton>
       </Box>
     </Container>
   );
