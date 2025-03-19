@@ -103,12 +103,26 @@ const ChatApp: React.FC = () => {
                 borderRadius: 2,
                 maxWidth: '75%',
                 whiteSpace: 'pre-wrap',
+                '& p': { margin: 0 },
+                '& pre': { 
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  '& code': {
+                    display: 'block',
+                    padding: '0.5em',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    borderRadius: 1
+                  }
+                }
               }}
             >
-              {/* Use ReactMarkdown for better AI formatting */}
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
+              <ReactMarkdown components={{
+                pre: ({ children }) => <pre style={{ margin: 0 }}>{children}</pre>,
+                code: ({ children }) => <code>{children}</code>
+              }}>
+                {msg.text}
+              </ReactMarkdown>
             </Box>
-
             {msg.sender === 'user' && (
               <Avatar sx={{ bgcolor: 'blue', ml: 1 }}>U</Avatar>
             )}
