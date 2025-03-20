@@ -7,11 +7,13 @@ import {
   CircularProgress,
   Typography,
   Avatar,
+  InputAdornment,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useChatStore } from '../store/chatStore';
 import { v4 as uuidv4 } from 'uuid';
 import ReactMarkdown from 'react-markdown';
+import { ArrowUpward, AttachFile, Mic } from '@mui/icons-material';
 
 const API_URL = 'https://test-stream-python.onrender.com/stream';
 const API_KEY = '19290737-c14d-4757-90f1-f5ed89014fa4';
@@ -79,9 +81,13 @@ const ChatApp: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Container maxWidth="lg" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Chat Messages */}
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }} ref={(el) => {
+        if (el) {
+          el.scrollTop = el.scrollHeight
+        }
+      }}>
       {messages.map((msg, index) => (
         <Box
         key={msg.id}
@@ -106,8 +112,8 @@ const ChatApp: React.FC = () => {
 
         <Box
           sx={{
-          backgroundColor: msg.sender === 'user' ? 'primary.main' : 'grey.800',
-          color: 'white',
+          backgroundColor: msg.sender === 'user' ? 'primary.main' : '#e3f2fd',
+          color:"#202124",
           p: 1.5,
           borderRadius: 2,
           maxWidth: '75%',
@@ -131,8 +137,7 @@ const ChatApp: React.FC = () => {
           }}>
           {msg.text || (loading && index === messages.length - 1 && '...')}
           </ReactMarkdown>
-        </Box>
-        {msg.sender === 'user' && (
+        </Box>        {msg.sender === 'user' && (
           <Avatar sx={{ bgcolor: 'blue', ml: 1 }}>U</Avatar>
         )}
         </Box>
@@ -156,6 +161,7 @@ const ChatApp: React.FC = () => {
         >
           {/* <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar> */}
           <Box
+          
             sx={{
               backgroundColor: 'grey.800',
               color: 'white',
@@ -180,22 +186,86 @@ const ChatApp: React.FC = () => {
         </Box>
       )}
       </Box>
-
       {/* Input Section */}
-      <Box sx={{ display: 'flex', p: 2, borderTop: '1px solid #ddd' }}>
-      <TextField
-        fullWidth
-        variant="outlined"
-        placeholder="Type a message..."
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-        disabled={loading}
-      />
-      <IconButton color="primary" onClick={sendMessage} disabled={loading}>
-        <SendIcon />
-      </IconButton>
+      <Box
+        
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          alignItems: 'center',
+          p: 1,
+          borderTop: '1px solid #ddd',
+          
+          boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#fff',
+          zIndex: 1000, // Ensure it stays on top
+        }}
+      >
+       
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            maxWidth: "lg",
+            margin: "0 auto",
+            borderRadius: "30px",
+            backgroundColor: "#f1f3f4",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            padding: "8px 16px",
+          }}
+        >
+          {/* Input Field with Attach Icon */}
+          <TextField
+            fullWidth
+            variant="standard"
+            placeholder="Message ..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            InputProps={{
+              disableUnderline: true,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconButton>
+                    <AttachFile sx={{ color: "#9E9E9E" }} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton>
+                    <Mic sx={{ color: "#9E9E9E" }} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+              sx: {
+                px: 1,
+                borderRadius: "30px",
+              },
+            }}
+          />
+
+          {/* Send Button */}
+          <IconButton
+            onClick={sendMessage}
+            sx={{
+              backgroundColor: "#7B61FF",
+              color: "#fff",
+              ml: 1,
+              "&:hover": {
+                backgroundColor: "#6A50E5",
+              },
+            }}
+          >
+            <ArrowUpward />
+          </IconButton>
+        </Box>
       </Box>
+
     </Container>
   );
 };
