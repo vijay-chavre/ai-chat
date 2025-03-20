@@ -1,33 +1,171 @@
-import React, { useState } from 'react';
+import { ArrowUpward, AttachFile, Mic, SmartToy } from '@mui/icons-material';
 import {
-  Container,
-  Box,
-  TextField,
-  IconButton,
-  CircularProgress,
-  Typography,
   Avatar,
+  Box,
+  Container,
+  IconButton,
   InputAdornment,
+  TextField,
+  Typography
 } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import { useChatStore } from '../store/chatStore';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowUpward, AttachFile, Mic } from '@mui/icons-material';
+import { v4 as uuidv4 } from 'uuid';
+import { useChatStore } from '../store/chatStore';
+import PersonIcon from "@mui/icons-material/Person";
+import ChatIcon from "@mui/icons-material/Chat";
 
 const API_URL = 'https://test-stream-python.onrender.com/stream';
 const API_KEY = '19290737-c14d-4757-90f1-f5ed89014fa4';
+
+
+
+
+interface Message {
+  id: string;
+  text: string;
+  sender: "user" | "ai";
+  timestamp?: Date;
+}
+
+interface MessageListProps {
+  messages: Message[];
+  loading: boolean;
+}
+
+const MessageList: React.FC<MessageListProps> = ({ messages, loading }) => {
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        overflowY: "auto",
+        p: 2,
+      }}
+      ref={(el) => {
+        if (el) el.scrollTop = el.scrollHeight;
+      }}
+    >
+      {messages.map((msg) => (
+        <Box
+          key={msg.id}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            flexDirection: "column",
+            mb: 2,
+          }}
+        >
+          {msg.sender === "ai" && (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Avatar sx={{ bgcolor: "#F0F3FD", mr: 1 }}>
+            
+            <SmartToy sx={{ color: '#5f6ff4', backgroundColor: '#F0F3FD', borderRadius: '50%', padding: '4px' }} />
+          </Avatar>
+          <Box sx={{ display: "flex", alignItems: "center" }}><span >AI</span>
+          <Typography variant="body2" sx={{ color: "#5F6368" ,ml:1 }}>
+            {
+              msg.timestamp?.toLocaleTimeString()
+              }</Typography>
+          </Box>
+         
+        </Box>
+          )}
+
+{msg.sender === "user" && (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Avatar sx={{ bgcolor: "#F0F3FD", mr: 1 }}>
+                <PersonIcon sx={{ color: '#5f6ff4', backgroundColor: '#F0F3FD', borderRadius: '50%', padding: '4px' }} />
+              </Avatar>
+              <Box sx={{ display: "flex", alignItems: "center" }}><span >You</span>
+              <Typography variant="body2" sx={{ color: "#5F6368", ml:1 }}>
+               {msg.timestamp?.toLocaleTimeString()
+                }</Typography>
+                </Box>
+            </Box>
+            
+          )}
+
+          <Box
+            sx={{
+              maxWidth: "75%",
+              p: 2,
+              ml:6,
+              borderRadius: 2,
+              backgroundColor: "#F0F3FD",
+              color: "black",
+              whiteSpace: "pre-wrap",
+              "& p": { margin: "0 0 8px" },
+              "& ul": { paddingLeft: 2 },
+              "& code": {
+                backgroundColor: "rgba(0,0,0,0.1)",
+                padding: "2px 4px",
+                borderRadius: "4px",
+              },
+            }}
+          >
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          </Box>
+
+         
+        </Box>
+      ))}
+
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
+          <Box
+            sx={{
+              backgroundColor: "#F1F3F4",
+              p: 1.5,
+              borderRadius: 2,
+              maxWidth: "75%",
+              display: "flex",
+              gap: 0.5,
+              "@keyframes bounce": {
+                "0%, 100%": {
+                  transform: "translateY(0)",
+                },
+                "50%": {
+                  transform: "translateY(-5px)",
+                },
+              },
+            }}
+          >
+            <Typography sx={{
+              animation: "bounce 1s infinite",
+              animationDelay: "0s",
+            }}>.</Typography>
+            <Typography
+              sx={{
+                animation: "bounce 1s infinite",
+                animationDelay: "0.2s",
+              }}
+            >
+              .
+            </Typography>
+            <Typography sx={{
+              animation: "bounce 1s infinite",
+              animationDelay: "0.4s",
+            }}>.</Typography>
+          </Box>        </Box>
+      )}
+    </Box>
+  );
+};
+
+
 
 const ChatApp: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const { messages, addMessage, updateLastMessage } = useChatStore();
 
+  
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
     // Add user message
-    const userMessage = { id: uuidv4(), text: input, sender: 'user' };
+    const userMessage = { id: uuidv4(), text: input, sender: 'user', timestamp: new Date() };
     addMessage(userMessage);
     setInput('');
     setLoading(true);
@@ -43,7 +181,7 @@ const ChatApp: React.FC = () => {
       if (!response.body) throw new Error('ReadableStream not supported');
 
       // Add initial empty AI message
-      const aiMessage = { id: uuidv4(), text: '', sender: 'ai' };
+      const aiMessage = { id: uuidv4(), text: '', sender: 'ai', timestamp: new Date() };
       addMessage(aiMessage);
 
       const reader = response.body.getReader();
@@ -74,7 +212,7 @@ const ChatApp: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching AI response:', error);
-      addMessage({ id: uuidv4(), text: 'Error: AI response failed.', sender: 'ai' });
+      addMessage({ id: uuidv4(), text: 'Error: AI response failed.', sender: 'ai', timestamp: new Date() });
     } finally {
       setLoading(false);
     }
@@ -83,109 +221,8 @@ const ChatApp: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Chat Messages */}
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }} ref={(el) => {
-        if (el) {
-          el.scrollTop = el.scrollHeight
-        }
-      }}>
-      {messages.map((msg, index) => (
-        <Box
-        key={msg.id}
-        sx={{
-          display: 'flex',
-          justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-          mb: 2,
-          '@keyframes bounce': {
-            '0%, 100%': {
-              transform: 'translateY(0)',
-            },
-            '50%': {
-              transform: 'translateY(-10px)',
-            },
-          },
-          animation: loading && index === messages.length - 1 ? 'bounce 1s infinite' : 'none',
-        }}
-        >
-        {msg.sender === 'ai' && (
-          <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar>
-        )}
-
-        <Box
-          sx={{
-          backgroundColor: msg.sender === 'user' ? 'primary.main' : '#e3f2fd',
-          color:"#202124",
-          p: 1.5,
-          borderRadius: 2,
-          maxWidth: '75%',
-          whiteSpace: 'pre-wrap',
-          '& p': { margin: 0 },
-          '& pre': { 
-            overflowX: 'auto',
-            maxWidth: '100%',
-            '& code': {
-            display: 'block',
-            padding: '0.5em',
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            borderRadius: 1
-            }
-          }
-          }}
-        >
-          <ReactMarkdown components={{
-          pre: ({ children }) => <pre style={{ margin: 0 }}>{children}</pre>,
-          code: ({ children }) => <code>{children}</code>
-          }}>
-          {msg.text || (loading && index === messages.length - 1 && '...')}
-          </ReactMarkdown>
-        </Box>        {msg.sender === 'user' && (
-          <Avatar sx={{ bgcolor: 'blue', ml: 1 }}>U</Avatar>
-        )}
-        </Box>
-      ))}
-      {loading && messages[messages.length - 1]?.sender === 'ai' && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            mb: 2,
-            '@keyframes bounce': {
-              '0%, 100%': {
-                transform: 'translateY(0)',
-              },
-              '50%': {
-                transform: 'translateY(-10px)',
-              },
-            },
-            animation: 'bounce 1s infinite',
-          }}
-        >
-          {/* <Avatar sx={{ bgcolor: 'green', mr: 1 }}>AI</Avatar> */}
-          <Box
-          
-            sx={{
-              backgroundColor: 'grey.800',
-              color: 'white',
-              p: 1.5,
-              borderRadius: 2,
-              maxWidth: '75%',
-              display: 'flex',
-              gap: 0.5,
-            }}
-          >
-            <span>.</span>
-            <span
-              style={{
-              display: 'inline-block',
-              animation: 'bounce 1s infinite',
-              }}
-            >
-              .
-            </span>
-            <span>.</span>
-          </Box>
-        </Box>
-      )}
-      </Box>
+    
+      <MessageList messages={messages} loading={loading} />
       {/* Input Section */}
       <Box
         
@@ -266,8 +303,7 @@ const ChatApp: React.FC = () => {
         </Box>
       </Box>
 
-    </Container>
-  );
+    </Container>  );
 };
 
 export default ChatApp;
